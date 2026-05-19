@@ -1,0 +1,29 @@
+{
+    "name": "vestige/vestige",
+    "description": "Vestige — a tiny SOLID PHP framework.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.5",
+        "vestige/kernel": "@dev",
+        "vestige/phpstan-rules": "@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.0",
+        "phpstan/phpstan": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.65",
+        "rector/rector": "^2.0"
+    },
+    "repositories": [
+        {"type": "path", "url": "packages/kernel"},
+        {"type": "path", "url": "packages/phpstan-rules"}
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    }
+}

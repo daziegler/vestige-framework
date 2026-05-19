@@ -1,0 +1,16 @@
+services:
+  php:
+    build:
+      context: ./docker
+      args:
+        UID: ${HOST_UID:-1000}
+        GID: ${HOST_GID:-1000}
+    image: vestige/php:dev
+    volumes:
+      - .:/app
+    working_dir: /app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:8000"
+    tty: true

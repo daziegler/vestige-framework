@@ -1,0 +1,11 @@
+includes:
+    - packages/phpstan-rules/extension.neon
+
+parameters:
+    level: max
+    paths:
+        - packages/kernel/src
+        - packages/kernel/tests
+        - packages/phpstan-rules/src
+        - packages/phpstan-rules/tests
+    tmpDir: .phpstan.cache
