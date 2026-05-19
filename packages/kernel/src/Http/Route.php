@@ -88,20 +88,8 @@ final readonly class Route
         return self::create(HttpMethod::Options, $path, $controller);
     }
 
-    /** @param class-string<MiddlewareInterface> $middleware */
-    public function withMiddleware(string $middleware): self
-    {
-        return self::create(
-            $this->method,
-            $this->path,
-            $this->controller,
-            [...$this->middleware, $middleware],
-            $this->name,
-        );
-    }
-
     /** @param class-string<MiddlewareInterface> ...$middleware */
-    public function withMiddlewares(string ...$middleware): self
+    public function withMiddleware(string ...$middleware): self
     {
         return self::create(
             $this->method,
