@@ -8,12 +8,16 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Vestige\Config\Config;
+use Vestige\Config\Exceptions\DirectoryNotFoundException;
+use Vestige\Config\Exceptions\InvalidConfigFileException;
 use Vestige\Config\Exceptions\InvalidKeyPathException;
 use Vestige\Config\Exceptions\KeyNotFoundException;
 
 #[CoversClass(Config::class)]
 #[CoversClass(KeyNotFoundException::class)]
 #[CoversClass(InvalidKeyPathException::class)]
+#[CoversClass(DirectoryNotFoundException::class)]
+#[CoversClass(InvalidConfigFileException::class)]
 final class ConfigTest extends TestCase
 {
     #[Test]
@@ -88,7 +92,7 @@ final class ConfigTest extends TestCase
         $config = new Config(
             [
                 'a' => ['b' => ['c' => ['d' => ['e' => 'deep']]]],
-            ]
+            ],
         );
 
         self::assertSame('deep', $config->get('a.b.c.d.e'));
@@ -111,4 +115,35 @@ final class ConfigTest extends TestCase
         $this->expectException(KeyNotFoundException::class);
         $config->get('app.');
     }
+
+    #[Test]
+    public function from_directory_loads_php_files_keyed_by_basename(): void
+    {
+        $config = Config::fromDirectory(__DIR__ . '/fixtures/loads-files');
+
+        self::assertSame('vestige', $config->get('app.name'));
+    }
+
+    #[Test]
+    public function from_directory_throws_when_directory_does_not_exist(): void
+    {
+        $this->expectException(DirectoryNotFoundException::class);
+        Config::fromDirectory(__DIR__ . '/fixtures/nonexistent');
+    }
+
+    #[Test]
+    public function from_directory_throws_when_config_file_does_not_return_array(): void
+    {
+        $this->expectException(InvalidConfigFileException::class);
+        Config::fromDirectory(__DIR__ . '/fixtures/non-array-file');
+    }
+
+    #[Test]
+    public function from_directory_handles_path_containing_glob_metacharacters(): void
+    {
+        $config = Config::fromDirectory(__DIR__ . '/fixtures/with-[brackets]');
+
+        self::assertSame('vestige', $config->get('app.name'));
+    }
+
 }

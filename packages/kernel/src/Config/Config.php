@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Vestige\Config;
 
+use FilesystemIterator;
+use SplFileInfo;
 use Vestige\Config\Exceptions\ConfigExceptionInterface;
+use Vestige\Config\Exceptions\DirectoryNotFoundException;
+use Vestige\Config\Exceptions\InvalidConfigFileException;
 use Vestige\Config\Exceptions\InvalidKeyPathException;
 use Vestige\Config\Exceptions\KeyNotFoundException;
 
@@ -18,6 +22,33 @@ final readonly class Config
     /**
      * @throws ConfigExceptionInterface
      */
+    public static function fromDirectory(string $path): self
+    {
+        if (is_dir($path) === false) {
+            throw DirectoryNotFoundException::forPath($path);
+        }
+
+        $data = [];
+        foreach (new FilesystemIterator($path) as $file) {
+            /** @var SplFileInfo $file */
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $loaded = require $file->getPathname();
+            if (is_array($loaded) === false) {
+                throw InvalidConfigFileException::forNonArrayReturn($file->getPathname());
+            }
+
+            $data[$file->getBasename('.php')] = $loaded;
+        }
+
+        return new self($data);
+    }
+
+    /**
+     * @throws ConfigExceptionInterface
+     */
     public function get(string $key): mixed
     {
         $current = $this->data;
@@ -27,9 +58,11 @@ final readonly class Config
             if (is_array($current) === false) {
                 throw InvalidKeyPathException::forNonArrayPath($key);
             }
+
             if (array_key_exists($segment, $current) === false || $segment === '') {
                 throw KeyNotFoundException::forKey($key);
             }
+
             $current = $current[$segment];
         }
 
