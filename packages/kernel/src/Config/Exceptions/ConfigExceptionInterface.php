@@ -6,6 +6,4 @@ namespace Vestige\Config\Exceptions;
 
 use Throwable;
 
-interface ConfigExceptionInterface extends Throwable
-{
-}
+interface ConfigExceptionInterface extends Throwable {}

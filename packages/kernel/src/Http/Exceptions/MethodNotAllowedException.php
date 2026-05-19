@@ -22,7 +22,7 @@ final class MethodNotAllowedException extends HttpException
     ) {
         $headers['Allow'] = implode(
             ', ',
-            array_map(static fn(HttpMethod $method): string => $method->value, $allowedMethods)
+            array_map(static fn(HttpMethod $method): string => $method->value, $allowedMethods),
         );
         parent::__construct(HttpStatus::MethodNotAllowed, $message, $previous, $headers);
     }

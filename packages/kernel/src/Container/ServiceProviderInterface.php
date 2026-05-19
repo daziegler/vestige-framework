@@ -6,6 +6,4 @@ namespace Vestige\Container;
 
 use League\Container\ServiceProvider\ServiceProviderInterface as LeagueServiceProviderInterface;
 
-interface ServiceProviderInterface extends LeagueServiceProviderInterface
-{
-}
+interface ServiceProviderInterface extends LeagueServiceProviderInterface {}
