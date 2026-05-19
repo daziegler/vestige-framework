@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\CodeQuality\Rector\FunctionLike\SimplifyUselessVariableRector;
+use Rector\CodingStyle\Rector\ClassLike\NewlineBetweenClassLikeStmtsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Ternary\TernaryToBooleanOrFalseToBooleanAndRector;
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
@@ -14,7 +15,7 @@ return RectorConfig::configure()
             __DIR__ . '/packages/kernel/tests',
             __DIR__ . '/packages/phpstan-rules/src',
             __DIR__ . '/packages/phpstan-rules/tests',
-        ]
+        ],
     )
     ->withCache(cacheDirectory: __DIR__ . '/.rector.cache')
     ->withImportNames(removeUnusedImports: true)
@@ -23,8 +24,8 @@ return RectorConfig::configure()
             RemoveExtraParametersRector::class,
             TernaryToBooleanOrFalseToBooleanAndRector::class,
             SimplifyUselessVariableRector::class,
-            // NewlineBetweenClassLikeStmtsRector — add once exact FQCN is verified on first run.
-        ]
+            NewlineBetweenClassLikeStmtsRector::class,
+        ],
     )
     ->withPreparedSets(codingStyle: true)
     ->withDeadCodeLevel(47)
