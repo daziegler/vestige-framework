@@ -18,6 +18,18 @@
         {"type": "path", "url": "packages/kernel"},
         {"type": "path", "url": "packages/phpstan-rules"}
     ],
+  "autoload": {
+    "psr-4": {
+      "Vestige\\": "packages/kernel/src/",
+      "Vestige\\PhpstanRules\\": "packages/phpstan-rules/src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Vestige\\Tests\\": "packages/kernel/tests/",
+      "Vestige\\PhpstanRules\\Tests\\": "packages/phpstan-rules/tests/"
+    }
+  },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "config": {
