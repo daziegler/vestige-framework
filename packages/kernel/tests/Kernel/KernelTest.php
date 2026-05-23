@@ -9,10 +9,12 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Vestige\Exceptions\KernelNotBootedException;
+use Vestige\Exceptions\RoutesFileException;
 use Vestige\Kernel;
 
 #[CoversClass(Kernel::class)]
 #[CoversClass(KernelNotBootedException::class)]
+#[CoversClass(RoutesFileException::class)]
 final class KernelTest extends TestCase
 {
     #[Test]
@@ -42,5 +44,23 @@ final class KernelTest extends TestCase
         $kernel->boot();
 
         self::expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function boot_throws_when_routes_file_is_missing(): void
+    {
+        $kernel = new Kernel(__DIR__ . '/fixtures/no-routes-app');
+
+        $this->expectException(RoutesFileException::class);
+        $kernel->boot();
+    }
+
+    #[Test]
+    public function boot_throws_when_routes_file_returns_non_collection(): void
+    {
+        $kernel = new Kernel(__DIR__ . '/fixtures/bad-routes-app');
+
+        $this->expectException(RoutesFileException::class);
+        $kernel->boot();
     }
 }

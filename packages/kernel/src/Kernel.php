@@ -6,14 +6,20 @@ namespace Vestige;
 
 use Dotenv\Dotenv;
 use League\Container\Container as LeagueContainer;
-use LogicException;
+use League\Container\ReflectionContainer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Vestige\Config\Config;
 use Vestige\Container\Container;
 use Vestige\Container\ServiceProviderInterface;
 use Vestige\Exceptions\KernelNotBootedException;
+use Vestige\Exceptions\RoutesFileException;
+use Vestige\Http\MiddlewarePipeline;
+use Vestige\Http\RouteCollection;
+use Vestige\Http\Router;
+use Vestige\Http\Routing\FastRouteDispatcher;
 
 final class Kernel implements RequestHandlerInterface
 {
@@ -36,6 +42,7 @@ final class Kernel implements RequestHandlerInterface
         $this->config = Config::fromDirectory($this->basePath . '/config');
 
         $this->initContainer();
+        $this->initRouter();
         $this->registerProviders();
         $this->loadServices();
 
@@ -50,6 +57,24 @@ final class Kernel implements RequestHandlerInterface
         $this->container = new Container($league);
         $this->container->bind(Config::class, $this->config);
         $this->container->bind(Environment::class, $this->env);
+    }
+
+    private function initRouter(): void
+    {
+        $routesFile = $this->basePath . '/routes.php';
+        if (is_file($routesFile) === false) {
+            throw RoutesFileException::missing($routesFile);
+        }
+
+        $routes = require $routesFile;
+        if (! $routes instanceof RouteCollection) {
+            throw RoutesFileException::invalidReturn($routesFile, $routes);
+        }
+
+        $this->container->bind(
+            Router::class,
+            new Router($this->container, new FastRouteDispatcher($routes)),
+        );
     }
 
     private function registerProviders(): void
@@ -77,6 +102,15 @@ final class Kernel implements RequestHandlerInterface
             throw KernelNotBootedException::create();
         }
 
-        throw new LogicException('Pipeline not yet implemented (awaiting step 8).');
+        /** @var list<class-string<MiddlewareInterface>> $middleware */
+        $middleware = $this->config->getOr('app.middleware', []);
+
+        $pipeline = new MiddlewarePipeline(
+            $this->container,
+            $middleware,
+            $this->container->get(Router::class),
+        );
+
+        return $pipeline->handle($request);
     }
 }
