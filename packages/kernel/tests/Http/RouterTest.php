@@ -15,6 +15,7 @@ use Vestige\Http\Exceptions\NotFoundException;
 use Vestige\Http\Route;
 use Vestige\Http\RouteCollection;
 use Vestige\Http\Router;
+use Vestige\Http\Routing\FastRouteDispatcher;
 use Vestige\Tests\Http\Fixtures\HelloController;
 use Vestige\Tests\Http\Fixtures\NameEchoController;
 
@@ -30,7 +31,7 @@ final class RouterTest extends TestCase
         $routes = new RouteCollection([
             Route::get('/hello', HelloController::class),
         ]);
-        $router = new Router($container, $routes);
+        $router = new Router($container, new FastRouteDispatcher($routes));
 
         $request = new Psr17Factory()->createServerRequest('GET', '/hello');
         $response = $router->handle($request);
@@ -48,7 +49,7 @@ final class RouterTest extends TestCase
         $routes = new RouteCollection([
             Route::get('/hello/{name}', NameEchoController::class),
         ]);
-        $router = new Router($container, $routes);
+        $router = new Router($container, new FastRouteDispatcher($routes));
 
         $request = (new Psr17Factory())->createServerRequest('GET', '/hello/world');
         $response = $router->handle($request);
@@ -61,7 +62,7 @@ final class RouterTest extends TestCase
     {
         $container = new Container(new LeagueContainer());
         $routes = new RouteCollection();
-        $router = new Router($container, $routes);
+        $router = new Router($container, new FastRouteDispatcher($routes));
 
         $this->expectException(NotFoundException::class);
         $router->handle((new Psr17Factory())->createServerRequest('GET', '/nope'));
@@ -77,7 +78,7 @@ final class RouterTest extends TestCase
             Route::get('/hello', HelloController::class),
             Route::post('/hello', HelloController::class),
         ]);
-        $router = new Router($container, $routes);
+        $router = new Router($container, new FastRouteDispatcher($routes));
 
         try {
             $router->handle((new Psr17Factory())->createServerRequest('DELETE', '/hello'));

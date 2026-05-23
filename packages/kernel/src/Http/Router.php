@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Vestige\Http;
 
-use FastRoute\Dispatcher;
-use FastRoute\RouteCollector;
 use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,76 +11,44 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Vestige\Container\ContainerInterface;
 use Vestige\Http\Exceptions\MethodNotAllowedException;
 use Vestige\Http\Exceptions\NotFoundException;
-use function FastRoute\simpleDispatcher;
+use Vestige\Http\Routing\DispatcherInterface;
+use Vestige\Http\Routing\Found;
+use Vestige\Http\Routing\MethodNotAllowed;
+use Vestige\Http\Routing\NotFound;
 
 final readonly class Router implements RequestHandlerInterface
 {
-    private Dispatcher $dispatcher;
-
     public function __construct(
         private ContainerInterface $container,
-        RouteCollection $routes,
-    ) {
-        $this->dispatcher = self::buildDispatcher($routes);
-    }
-
-    private static function buildDispatcher(RouteCollection $routes): Dispatcher
-    {
-        return simpleDispatcher(static function (RouteCollector $collector) use ($routes): void {
-            foreach ($routes->routes as $route) {
-                $collector->addRoute($route->method->value, $route->path, $route);
-            }
-        });
-    }
+        private DispatcherInterface $dispatcher,
+    ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        /** @var array<int, mixed> $info */
-        $info = $this->dispatcher->dispatch(
+        $result = $this->dispatcher->dispatch(
             $request->getMethod(),
             $request->getUri()->getPath(),
         );
 
-        return match ($info[0]) {
-            Dispatcher::NOT_FOUND => throw new NotFoundException(),
-            Dispatcher::METHOD_NOT_ALLOWED => $this->throwMethodNotAllowed($info),
-            Dispatcher::FOUND => $this->dispatchFound($request, $info),
-            default => throw new LogicException('Unexpected dispatcher result.'),
+        return match (true) {
+            $result instanceof Found => $this->dispatchFound($request, $result),
+            $result instanceof MethodNotAllowed => throw new MethodNotAllowedException($result->allowedMethods),
+            $result instanceof NotFound => throw new NotFoundException(),
+            default => throw new LogicException('Unhandled dispatch result type: ' . $result::class),
         };
     }
 
-    /**
-     * @param array<int, mixed> $info
-     */
-    private function throwMethodNotAllowed(array $info): never
+    private function dispatchFound(ServerRequestInterface $request, Found $found): ResponseInterface
     {
-        /** @var list<string> $allowedMethodNames */
-        $allowedMethodNames = $info[1];
-
-        throw new MethodNotAllowedException(
-            array_map(static fn(string $name): HttpMethod => HttpMethod::from($name), $allowedMethodNames),
-        );
-    }
-
-    /**
-     * @param array<int, mixed> $info
-     */
-    private function dispatchFound(ServerRequestInterface $request, array $info): ResponseInterface
-    {
-        /** @var Route $route */
-        $route = $info[1];
-        /** @var array<string, string> $vars */
-        $vars = $info[2];
-
-        foreach ($vars as $key => $value) {
+        foreach ($found->vars as $key => $value) {
             $request = $request->withAttribute($key, $value);
         }
 
-        $controller = $this->container->get($route->controller);
+        $controller = $this->container->get($found->route->controller);
 
         $pipeline = new MiddlewarePipeline(
             $this->container,
-            $route->middleware,
+            $found->route->middleware,
             $controller,
         );
 
