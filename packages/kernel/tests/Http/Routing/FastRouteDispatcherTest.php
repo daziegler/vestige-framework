@@ -36,6 +36,19 @@ final class FastRouteDispatcherTest extends TestCase
     }
 
     #[Test]
+    public function dispatches_found_with_decoded_vars(): void
+    {
+        $dispatcher = new FastRouteDispatcher(new RouteCollection([
+            Route::get('/hello/{name}', HelloController::class),
+        ]));
+
+        $result = $dispatcher->dispatch('GET', '/hello/john%20doe');
+
+        self::assertInstanceOf(Found::class, $result);
+        self::assertSame(['name' => 'john doe'], $result->vars);
+    }
+
+    #[Test]
     public function dispatches_not_found_for_unmatched_path(): void
     {
         $dispatcher = new FastRouteDispatcher(new RouteCollection());

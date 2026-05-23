@@ -28,7 +28,7 @@ final readonly class FastRouteDispatcher implements DispatcherInterface
     public function dispatch(string $method, string $path): DispatchResultInterface
     {
         /** @var array<int, mixed> $info */
-        $info = $this->delegate->dispatch($method, $path);
+        $info = $this->delegate->dispatch($method, rawurldecode($path));
 
         return match ($info[0]) {
             FastRouteContract::NOT_FOUND => new NotFound(),
