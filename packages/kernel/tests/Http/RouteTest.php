@@ -70,7 +70,7 @@ final class RouteTest extends TestCase
     }
 
     #[Test]
-    public function with_middleware_returns_new_route_with_added_middleware(): void
+    public function with_middleware_adds_single_via_varargs(): void
     {
         $route = Route::create(HttpMethod::Get, '/', HelloController::class);
         $extended = $route->withMiddleware(HelloMiddleware::class);
@@ -81,10 +81,10 @@ final class RouteTest extends TestCase
     }
 
     #[Test]
-    public function with_middlewares_appends_multiple_via_varargs(): void
+    public function with_middleware_appends_multiple_via_varargs(): void
     {
         $route = Route::create(HttpMethod::Get, '/', HelloController::class);
-        $extended = $route->withMiddlewares(HelloMiddleware::class, HelloMiddleware::class);
+        $extended = $route->withMiddleware(HelloMiddleware::class, HelloMiddleware::class);
 
         self::assertSame([HelloMiddleware::class, HelloMiddleware::class], $extended->middleware);
     }
