@@ -59,10 +59,10 @@ final class ContainerTest extends TestCase
     }
 
     #[Test]
-    public function add_service_provider_registers_its_services(): void
+    public function service_provider_can_register_services_into_container(): void
     {
         $container = new Container(new LeagueContainer());
-        $container->addServiceProvider(new SimpleServiceProvider());
+        new SimpleServiceProvider()->register($container);
 
         self::assertInstanceOf(SimpleService::class, $container->get(SimpleService::class));
     }

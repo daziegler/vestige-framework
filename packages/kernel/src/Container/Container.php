@@ -33,9 +33,4 @@ final readonly class Container implements ContainerInterface
 
         return new Definition($leagueDefinition);
     }
-
-    public function addServiceProvider(ServiceProviderInterface $provider): void
-    {
-        $this->delegate->addServiceProvider($provider);
-    }
 }

@@ -44,7 +44,10 @@ final class Kernel implements RequestHandlerInterface
 
     private function initContainer(): void
     {
-        $this->container = new Container(new LeagueContainer());
+        $league = new LeagueContainer();
+        $league->delegate(new ReflectionContainer());
+
+        $this->container = new Container($league);
         $this->container->bind(Config::class, $this->config);
         $this->container->bind(Environment::class, $this->env);
     }
@@ -54,7 +57,8 @@ final class Kernel implements RequestHandlerInterface
         /** @var class-string<ServiceProviderInterface>[] $providers */
         $providers = $this->config->getOr('app.providers', []);
         foreach ($providers as $class) {
-            $this->container->addServiceProvider(new $class());
+            $provider = new $class();
+            $provider->register($this->container);
         }
     }
 

@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace Vestige\Tests\Container\Fixtures;
 
-use League\Container\ServiceProvider\AbstractServiceProvider;
+use Vestige\Container\ContainerInterface;
 use Vestige\Container\ServiceProviderInterface;
 
-final class SimpleServiceProvider extends AbstractServiceProvider implements ServiceProviderInterface
+final class SimpleServiceProvider implements ServiceProviderInterface
 {
-    public function provides(string $id): bool
+    public function register(ContainerInterface $container): void
     {
-        return $id === SimpleService::class;
-    }
-
-    public function register(): void
-    {
-        $this->getContainer()->add(SimpleService::class);
+        $container->register(SimpleService::class);
     }
 }
