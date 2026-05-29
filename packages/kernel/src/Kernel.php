@@ -7,8 +7,11 @@ namespace Vestige;
 use Dotenv\Dotenv;
 use League\Container\Container as LeagueContainer;
 use League\Container\ReflectionContainer;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Vestige\Config\Config;
@@ -57,6 +60,10 @@ final class Kernel implements RequestHandlerInterface
         $this->container = new Container($league);
         $this->container->bind(Config::class, $this->config);
         $this->container->bind(Environment::class, $this->env);
+
+        $psr17 = new Psr17Factory();
+        $this->container->bind(ResponseFactoryInterface::class, $psr17);
+        $this->container->bind(StreamFactoryInterface::class, $psr17);
     }
 
     private function initRouter(): void
