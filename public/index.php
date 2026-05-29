@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Vestige\Environment;
+use Vestige\Http\ResponseEmitter;
 use Vestige\Kernel;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -19,10 +20,4 @@ $kernel = new Kernel(
 $kernel->boot();
 $response = $kernel->handle($request);
 
-http_response_code($response->getStatusCode());
-foreach ($response->getHeaders() as $name => $values) {
-    foreach ($values as $value) {
-        header(sprintf('%s: %s', $name, $value), false);
-    }
-}
-echo $response->getBody();
+new ResponseEmitter()->emit($response);
