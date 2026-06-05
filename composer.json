@@ -15,8 +15,16 @@
         "rector/rector": "^2.0"
     },
     "repositories": [
-        {"type": "path", "url": "packages/kernel"},
-        {"type": "path", "url": "packages/phpstan-rules"}
+        {
+            "type": "path",
+            "url": "packages/kernel",
+            "options": {"versions": {"vestige/kernel": "dev-main"}}
+        },
+        {
+            "type": "path",
+            "url": "packages/phpstan-rules",
+            "options": {"versions": {"vestige/phpstan-rules": "dev-main"}}
+        }
     ],
   "autoload": {
     "psr-4": {
