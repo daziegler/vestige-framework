@@ -22,7 +22,7 @@ final readonly class HtmlErrorFormatRenderer implements FormatRendererInterface
     public function render(Problem $problem, Throwable $throwable): ResponseInterface
     {
         $status = $problem->getStatus()->value;
-        $title = htmlspecialchars($problem->getTitle(), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $title = htmlspecialchars($problem->getTitle(), ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8');
 
         $html = <<<HTML
             <!DOCTYPE html>

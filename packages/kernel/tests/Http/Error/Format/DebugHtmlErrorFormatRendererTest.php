@@ -59,4 +59,17 @@ final class DebugHtmlErrorFormatRendererTest extends TestCase
         self::assertStringNotContainsString('<script>alert(1)</script>', $body);
         self::assertStringContainsString('&lt;script&gt;', $body);
     }
+
+    #[Test]
+    public function substitutes_invalid_utf8_instead_of_blanking_the_page(): void
+    {
+        $response = $this->renderer()->render(
+            Problem::forStatus(HttpStatus::InternalServerError),
+            new RuntimeException("broken \xFF byte"),
+        );
+
+        $body = (string) $response->getBody();
+        self::assertStringContainsString('broken', $body);
+        self::assertStringContainsString("\u{FFFD}", $body);
+    }
 }

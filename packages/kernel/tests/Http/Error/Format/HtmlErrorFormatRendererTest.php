@@ -56,4 +56,15 @@ final class HtmlErrorFormatRendererTest extends TestCase
 
         self::assertStringNotContainsString('internal secret', (string) $response->getBody());
     }
+
+    #[Test]
+    public function substitutes_invalid_utf8_in_the_title(): void
+    {
+        $response = $this->renderer()->render(
+            new Problem(status: HttpStatus::InternalServerError, title: "bad \xFF title"),
+            new RuntimeException('ignored'),
+        );
+
+        self::assertStringContainsString("\u{FFFD}", (string) $response->getBody());
+    }
 }
