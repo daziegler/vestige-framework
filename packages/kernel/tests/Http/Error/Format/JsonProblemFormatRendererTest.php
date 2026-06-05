@@ -45,9 +45,23 @@ final class JsonProblemFormatRendererTest extends TestCase
         self::assertSame('application/problem+json', $response->getHeaderLine('Content-Type'));
 
         $data = json_decode((string) $response->getBody(), true);
+        self::assertIsArray($data);
         self::assertSame('Not Found', $data['title']);
         self::assertSame(404, $data['status']);
         self::assertSame('about:blank', $data['type']);
+    }
+
+    #[Test]
+    public function substitutes_invalid_utf8_instead_of_throwing(): void
+    {
+        $response = $this->renderer()->render(
+            Problem::forStatus(HttpStatus::InternalServerError)->withExtension('note', "byte-\xFF-salad"),
+            new RuntimeException('ignored'),
+        );
+
+        $data = json_decode((string) $response->getBody(), true);
+        self::assertIsArray($data);
+        self::assertSame("byte-\u{FFFD}-salad", $data['note']);
     }
 
     #[Test]

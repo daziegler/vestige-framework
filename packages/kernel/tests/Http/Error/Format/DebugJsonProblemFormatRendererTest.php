@@ -47,11 +47,25 @@ final class DebugJsonProblemFormatRendererTest extends TestCase
         self::assertSame('application/problem+json', $response->getHeaderLine('Content-Type'));
 
         $data = json_decode((string) $response->getBody(), true);
+        self::assertIsArray($data);
         self::assertSame(500, $data['status']);
         self::assertSame(RuntimeException::class, $data['exception']);
         self::assertSame('the real cause', $data['message']);
         self::assertArrayHasKey('file', $data);
         self::assertArrayHasKey('line', $data);
         self::assertIsArray($data['trace']);
+    }
+
+    #[Test]
+    public function renders_a_throwable_with_invalid_utf8_in_the_message(): void
+    {
+        $response = $this->renderer()->render(
+            Problem::forStatus(HttpStatus::InternalServerError),
+            new RuntimeException("broken \xFF byte"),
+        );
+
+        $data = json_decode((string) $response->getBody(), true);
+        self::assertIsArray($data);
+        self::assertSame("broken \u{FFFD} byte", $data['message']);
     }
 }

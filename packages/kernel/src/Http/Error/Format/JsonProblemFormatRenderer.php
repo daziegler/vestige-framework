@@ -22,7 +22,10 @@ final readonly class JsonProblemFormatRenderer implements FormatRendererInterfac
 
     public function render(Problem $problem, Throwable $throwable): ResponseInterface
     {
-        $body = json_encode($problem->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        $body = json_encode(
+            $problem->toArray(),
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE,
+        );
 
         return $this->responder->respond($problem->getStatus()->value, Rfc9457::MEDIA_TYPE_JSON, $body);
     }
