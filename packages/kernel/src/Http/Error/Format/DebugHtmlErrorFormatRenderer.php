@@ -68,6 +68,7 @@ final readonly class DebugHtmlErrorFormatRenderer implements FormatRendererInter
                 $members[$key] = $value;
                 continue;
             }
+
             $members[$key] = (json_encode($value, JSON_INVALID_UTF8_SUBSTITUTE) ?: '');
         }
 

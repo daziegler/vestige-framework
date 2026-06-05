@@ -35,7 +35,9 @@ final class ResponseEmitterTest extends TestCase
     {
         $factory = new Psr17Factory();
         $stream = $factory->createStream('chunked content');
-        $stream->getContents(); // move pointer to EOF
+        // move pointer to EOF
+        $stream->getContents();
+
         $response = $factory->createResponse(200)->withBody($stream);
 
         ob_start();

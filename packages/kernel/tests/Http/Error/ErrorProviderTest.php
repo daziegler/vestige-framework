@@ -45,6 +45,7 @@ final class ErrorProviderTest extends TestCase
         $container = new Container(new LeagueContainer());
         $container->bind(ResponseFactoryInterface::class, $factory);
         $container->bind(StreamFactoryInterface::class, $factory);
+
         $provider->register($container);
 
         return $container;
