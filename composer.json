@@ -1,50 +1,41 @@
 {
-    "name": "vestige/vestige",
-    "description": "Vestige — a tiny SOLID PHP framework.",
-    "type": "project",
+    "name": "vestige/kernel",
+    "description": "Vestige framework kernel — HTTP kernel, routing, pipeline, errors.",
+    "type": "library",
     "license": "MIT",
     "require": {
         "php": "^8.5",
-        "vestige/kernel": "@dev",
-        "vestige/phpstan-rules": "@dev"
+        "league/container": "^4.2",
+        "monolog/monolog": "^3.0",
+        "nikic/fast-route": "^1.3",
+        "nyholm/psr7": "^1.8",
+        "nyholm/psr7-server": "^1.1",
+        "psr/container": "^2.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^2.0",
+        "psr/http-server-handler": "^1.0",
+        "psr/http-server-middleware": "^1.0",
+        "psr/log": "^3.0",
+        "vlucas/phpdotenv": "^5.6"
     },
     "require-dev": {
-        "phpunit/phpunit": "^13.0",
-        "phpstan/phpstan": "^2.0",
         "friendsofphp/php-cs-fixer": "^3.65",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^13.0",
         "rector/rector": "^2.0"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "packages/kernel",
-            "options": {"versions": {"vestige/kernel": "dev-main"}}
-        },
-        {
-            "type": "path",
-            "url": "packages/phpstan-rules",
-            "options": {"versions": {"vestige/phpstan-rules": "dev-main"}}
+    "autoload": {
+        "psr-4": {
+            "Vestige\\": "src/"
         }
-    ],
-  "autoload": {
-    "psr-4": {
-      "App\\": "app/",
-      "Vestige\\": "packages/kernel/src/",
-      "Vestige\\PhpstanRules\\": "packages/phpstan-rules/src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Vestige\\Tests\\": "packages/kernel/tests/",
-      "Vestige\\PhpstanRules\\Tests\\": "packages/phpstan-rules/tests/"
-    }
-  },
-    "minimum-stability": "stable",
-    "prefer-stable": true,
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Vestige\\Tests\\": "tests/",
+            "App\\": "app/"
+        }
+    },
     "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "phpstan/extension-installer": true
-        }
+        "sort-packages": true
     }
 }

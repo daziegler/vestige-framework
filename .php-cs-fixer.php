@@ -18,10 +18,8 @@ return new PhpCsFixer\Config()
         new PhpCsFixer\Finder()
             ->in(
                 [
-                    __DIR__ . '/packages/kernel/src',
-                    __DIR__ . '/packages/kernel/tests',
-                    __DIR__ . '/packages/phpstan-rules/src',
-                    __DIR__ . '/packages/phpstan-rules/tests',
+                    __DIR__ . '/src',
+                    __DIR__ . '/tests',
                 ]
             )
     )
