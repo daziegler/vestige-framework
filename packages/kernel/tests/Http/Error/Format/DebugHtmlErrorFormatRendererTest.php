@@ -72,4 +72,23 @@ final class DebugHtmlErrorFormatRendererTest extends TestCase
         self::assertStringContainsString('broken', $body);
         self::assertStringContainsString("\u{FFFD}", $body);
     }
+
+    #[Test]
+    public function renders_problem_detail_instance_and_extensions(): void
+    {
+        $problem = new Problem(
+            status: HttpStatus::UnprocessableEntity,
+            title: 'Unprocessable Entity',
+            detail: 'The name field is required.',
+            instance: '/users',
+        )->withExtension('traceId', 'abc-123');
+
+        $response = $this->renderer()->render($problem, new RuntimeException('cause'));
+
+        $body = (string) $response->getBody();
+        self::assertStringContainsString('The name field is required.', $body);
+        self::assertStringContainsString('/users', $body);
+        self::assertStringContainsString('traceId', $body);
+        self::assertStringContainsString('abc-123', $body);
+    }
 }

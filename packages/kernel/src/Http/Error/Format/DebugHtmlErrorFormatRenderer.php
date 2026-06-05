@@ -28,6 +28,7 @@ final readonly class DebugHtmlErrorFormatRenderer implements FormatRendererInter
         $message = $this->escape($throwable->getMessage());
         $location = $this->escape($throwable->getFile() . ':' . $throwable->getLine());
         $trace = $this->escape($throwable->getTraceAsString());
+        $members = $this->renderMembers($problem);
 
         $html = <<<HTML
             <!DOCTYPE html>
@@ -38,6 +39,7 @@ final readonly class DebugHtmlErrorFormatRenderer implements FormatRendererInter
             </head>
             <body>
                 <h1>{$status} {$title}</h1>
+                {$members}
                 <h2>{$class}</h2>
                 <p>{$message}</p>
                 <p><strong>at</strong> {$location}</p>
@@ -47,6 +49,38 @@ final readonly class DebugHtmlErrorFormatRenderer implements FormatRendererInter
             HTML;
 
         return $this->responder->respond($status, 'text/html; charset=utf-8', $html);
+    }
+
+    private function renderMembers(Problem $problem): string
+    {
+        $members = [];
+
+        if ($problem->getDetail() !== null) {
+            $members['detail'] = $problem->getDetail();
+        }
+
+        if ($problem->getInstance() !== null) {
+            $members['instance'] = $problem->getInstance();
+        }
+
+        foreach ($problem->getExtensions() as $key => $value) {
+            if (is_string($value)) {
+                $members[$key] = $value;
+                continue;
+            }
+            $members[$key] = (json_encode($value, JSON_INVALID_UTF8_SUBSTITUTE) ?: '');
+        }
+
+        if ($members === []) {
+            return '';
+        }
+
+        $rows = '';
+        foreach ($members as $key => $value) {
+            $rows .= sprintf('<dt>%s</dt><dd>%s</dd>', $this->escape($key), $this->escape($value));
+        }
+
+        return '<dl>' . $rows . '</dl>';
     }
 
     private function escape(string $value): string
