@@ -10,6 +10,7 @@ use LogicException;
 use Vestige\Http\HttpMethod;
 use Vestige\Http\Route;
 use Vestige\Http\RouteCollection;
+
 use function FastRoute\simpleDispatcher;
 
 final readonly class FastRouteDispatcher implements DispatcherInterface
