@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f1399f208e99af0b07f4165d10127bf",
+    "content-hash": "619e1140f08c5ac9f553134c753b7e35",
     "packages": [
         {
             "name": "graham-campbell/result-type",
@@ -1157,7 +1157,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/kernel",
-                "reference": "c58ada5eeadd82d7c0abd5faa982a3f2276380b8"
+                "reference": "3218a9ab9787c75a7fa6637d482a1152a5a2a692"
             },
             "require": {
                 "league/container": "^4.2",
@@ -1167,6 +1167,7 @@
                 "nyholm/psr7-server": "^1.1",
                 "php": "^8.5",
                 "psr/container": "^2.0",
+                "psr/http-factory": "^1.0",
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
@@ -1201,7 +1202,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/phpstan-rules",
-                "reference": "b4c29083702fe582c2fd3dc9f05f692c3272221b"
+                "reference": "a1f61f07bf18933f4875a7e1809189fd97c5f692"
             },
             "require": {
                 "php": "^8.5",
