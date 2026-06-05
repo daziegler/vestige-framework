@@ -20,7 +20,7 @@ final class KernelTest extends TestCase
     #[Test]
     public function boot_succeeds_on_empty_config_app(): void
     {
-        $kernel = new Kernel(__DIR__ . '/fixtures/empty-app');
+        $kernel = new Kernel(__DIR__ . '/apps/empty-app');
         $kernel->boot();
 
         self::expectNotToPerformAssertions();
@@ -29,7 +29,7 @@ final class KernelTest extends TestCase
     #[Test]
     public function handle_throws_when_not_booted(): void
     {
-        $kernel = new Kernel(__DIR__ . '/fixtures/empty-app');
+        $kernel = new Kernel(__DIR__ . '/apps/empty-app');
         $request = (new Psr17Factory())->createServerRequest('GET', '/');
 
         $this->expectException(KernelNotBootedException::class);
@@ -39,7 +39,7 @@ final class KernelTest extends TestCase
     #[Test]
     public function boot_is_idempotent(): void
     {
-        $kernel = new Kernel(__DIR__ . '/fixtures/empty-app');
+        $kernel = new Kernel(__DIR__ . '/apps/empty-app');
         $kernel->boot();
         $kernel->boot();
 
@@ -49,7 +49,7 @@ final class KernelTest extends TestCase
     #[Test]
     public function boot_throws_when_routes_file_is_missing(): void
     {
-        $kernel = new Kernel(__DIR__ . '/fixtures/no-routes-app');
+        $kernel = new Kernel(__DIR__ . '/apps/no-routes-app');
 
         $this->expectException(RoutesFileException::class);
         $kernel->boot();
@@ -58,7 +58,7 @@ final class KernelTest extends TestCase
     #[Test]
     public function boot_throws_when_routes_file_returns_non_collection(): void
     {
-        $kernel = new Kernel(__DIR__ . '/fixtures/bad-routes-app');
+        $kernel = new Kernel(__DIR__ . '/apps/bad-routes-app');
 
         $this->expectException(RoutesFileException::class);
         $kernel->boot();

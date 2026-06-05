@@ -16,7 +16,7 @@ final class Psr17BindingTest extends TestCase
     #[Test]
     public function controllers_can_autowire_the_psr17_response_factory(): void
     {
-        $kernel = new Kernel(__DIR__ . '/fixtures/psr17-app');
+        $kernel = new Kernel(__DIR__ . '/apps/psr17-app');
         $kernel->boot();
 
         $request = new Psr17Factory()->createServerRequest('GET', '/');
