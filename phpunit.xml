@@ -11,16 +11,12 @@
          displayDetailsOnTestsThatTriggerDeprecations="true">
     <testsuites>
         <testsuite name="kernel">
-            <directory>packages/kernel/tests</directory>
-        </testsuite>
-        <testsuite name="phpstan-rules">
-            <directory>packages/phpstan-rules/tests</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
     <source>
         <include>
-            <directory>packages/kernel/src</directory>
-            <directory>packages/phpstan-rules/src</directory>
+            <directory>src</directory>
         </include>
     </source>
 </phpunit>

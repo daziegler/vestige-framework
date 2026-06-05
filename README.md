@@ -18,15 +18,16 @@ just up                      # serve on http://localhost:8000
 
 ## Project layout
 
+This repo is the `vestige/kernel` package; a dev-only demo app rides along (excluded from dist via `.gitattributes`).
+
 ```
 .
-├── public/index.php         # front controller
-├── routes.php               # returns a RouteCollection
-├── config/                  # app config (PHP files returning arrays)
-├── app/                     # app code (controllers, providers)
-└── packages/
-    ├── kernel/              # the framework itself
-    └── phpstan-rules/       # custom PHPStan rules
+├── src/                     # the framework itself
+├── tests/                   # kernel tests
+├── public/index.php         # demo app: front controller
+├── routes.php               # demo app: returns a RouteCollection
+├── config/                  # demo app: config (PHP files returning arrays)
+└── app/                     # demo app: controllers, providers
 ```
 
 ## What's built
@@ -46,13 +47,12 @@ just up                      # serve on http://localhost:8000
 - RFC 9457 problem details (`ProblemInterface`, `Problem`)
 - Error rendering pipeline (production + debug renderers)
 - Logging (Monolog)
-- Custom PHPStan rules
 
 ## Development
 
 ```bash
 just test       # PHPUnit
-just phpstan    # PHPStan
+just stan       # PHPStan
 just cs         # php-cs-fixer (dry-run)
 just cs-fix     # php-cs-fixer (apply)
 just rector     # Rector (dry-run)
