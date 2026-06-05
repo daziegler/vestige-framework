@@ -9,7 +9,7 @@ use Vestige\Http\Exceptions\HttpExceptionInterface;
 use Vestige\Http\Exceptions\PublicMessageInterface;
 use Vestige\Http\HttpStatus;
 
-final readonly class Problem implements ProblemInterface
+final readonly class Problem
 {
     /** @param array<string, mixed> $extensions */
     public function __construct(
