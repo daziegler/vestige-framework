@@ -80,6 +80,18 @@ final class ProblemTest extends TestCase
     }
 
     #[Test]
+    public function from_http_exception_omits_instance_for_an_empty_path(): void
+    {
+        $factory = new Psr17Factory();
+        $request = $factory->createServerRequest('GET', $factory->createUri(''));
+
+        $problem = Problem::fromHttpException(new NotFoundException(), $request);
+
+        self::assertNull($problem->getInstance());
+        self::assertArrayNotHasKey('instance', $problem->toArray());
+    }
+
+    #[Test]
     public function with_extension_returns_a_new_instance_with_the_member_appended(): void
     {
         $problem = Problem::forStatus(HttpStatus::NotFound);

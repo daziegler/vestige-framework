@@ -29,25 +29,21 @@ final readonly class Problem implements ProblemInterface
     public static function fromHttpException(HttpExceptionInterface $exception, ServerRequestInterface $request): self
     {
         $status = $exception->getStatusCode();
+        $path = $request->getUri()->getPath();
 
         return new self(
             status: $status,
             title: $status->reasonPhrase(),
             detail: $exception instanceof PublicMessageInterface ? $exception->getPublicMessage() : null,
-            instance: $request->getUri()->getPath(),
+            instance: $path === '' ? null : $path,
         );
     }
 
     public function withExtension(string $key, mixed $value): self
     {
-        return new self(
-            $this->status,
-            $this->title,
-            $this->type,
-            $this->detail,
-            $this->instance,
-            [...$this->extensions, $key => $value],
-        );
+        return clone($this, [
+            'extensions' => [...$this->extensions, $key => $value],
+        ]);
     }
 
     public function getType(): string
