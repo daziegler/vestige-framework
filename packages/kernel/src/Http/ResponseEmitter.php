@@ -17,6 +17,25 @@ final class ResponseEmitter
             throw HeadersAlreadySentException::create();
         }
 
+        $this->emitHeaders($response);
+        $this->emitStatusLine($response);
+        $this->emitBody($response);
+    }
+
+    private function emitHeaders(ResponseInterface $response): void
+    {
+        foreach ($response->getHeaders() as $name => $values) {
+            $replace = strcasecmp($name, 'Set-Cookie') !== 0;
+
+            foreach ($values as $value) {
+                header(sprintf('%s: %s', $name, $value), $replace);
+                $replace = false;
+            }
+        }
+    }
+
+    private function emitStatusLine(ResponseInterface $response): void
+    {
         header(
             sprintf(
                 'HTTP/%s %d %s',
@@ -27,13 +46,10 @@ final class ResponseEmitter
             true,
             $response->getStatusCode(),
         );
+    }
 
-        foreach ($response->getHeaders() as $name => $values) {
-            foreach ($values as $value) {
-                header(sprintf('%s: %s', $name, $value), false);
-            }
-        }
-
+    private function emitBody(ResponseInterface $response): void
+    {
         $body = $response->getBody();
         if ($body->isSeekable()) {
             $body->rewind();

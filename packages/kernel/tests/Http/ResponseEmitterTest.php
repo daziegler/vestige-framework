@@ -21,8 +21,11 @@ final class ResponseEmitterTest extends TestCase
             ->withBody($factory->createStream('Hello, body!'));
 
         ob_start();
-        new ResponseEmitter()->emit($response);
-        $output = ob_get_clean();
+        try {
+            new ResponseEmitter()->emit($response);
+        } finally {
+            $output = ob_get_clean();
+        }
 
         self::assertSame('Hello, body!', $output);
     }
@@ -36,8 +39,11 @@ final class ResponseEmitterTest extends TestCase
         $response = $factory->createResponse(200)->withBody($stream);
 
         ob_start();
-        new ResponseEmitter()->emit($response);
-        $output = ob_get_clean();
+        try {
+            new ResponseEmitter()->emit($response);
+        } finally {
+            $output = ob_get_clean();
+        }
 
         self::assertSame('chunked content', $output);
     }
