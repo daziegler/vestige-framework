@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Vestige\Tests\Session\Fixtures;
+
+use Closure;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+final readonly class CallbackHandler implements RequestHandlerInterface
+{
+    public function __construct(private Closure $callback) {}
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return ($this->callback)($request);
+    }
+}
