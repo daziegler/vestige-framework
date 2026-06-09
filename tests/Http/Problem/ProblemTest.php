@@ -101,4 +101,16 @@ final class ProblemTest extends TestCase
         self::assertArrayNotHasKey('traceId', $problem->toArray());
         self::assertSame('abc-123', $extended->toArray()['traceId']);
     }
+
+    #[Test]
+    public function get_extensions_returns_the_extension_members(): void
+    {
+        $problem = Problem::forStatus(HttpStatus::NotFound);
+
+        self::assertSame([], $problem->getExtensions());
+        self::assertSame(
+            ['traceId' => 'abc-123'],
+            $problem->withExtension('traceId', 'abc-123')->getExtensions(),
+        );
+    }
 }
