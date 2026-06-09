@@ -3,9 +3,11 @@
 
 declare(strict_types=1);
 
-[, $file, $threshold] = $argv + [null, null, null];
-if ($file === null || $threshold === null) {
-    fwrite(STDERR, "Usage: check-coverage.php <clover.xml> <min-percent>\n");
+const MIN_COVERAGE = 99.0;
+
+[, $file, $threshold] = $argv + [null, null, MIN_COVERAGE];
+if ($file === null) {
+    fwrite(STDERR, "Usage: check-coverage.php <clover.xml> [min-percent]\n");
     exit(1);
 }
 
