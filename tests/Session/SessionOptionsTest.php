@@ -85,6 +85,17 @@ final class SessionOptionsTest extends TestCase
     }
 
     #[Test]
+    public function boolean_options_accept_common_string_forms(): void
+    {
+        $options = SessionOptions::fromConfig(new Config([
+            'session' => ['cookie' => ['secure' => 'false', 'httponly' => '1']],
+        ]));
+
+        self::assertFalse($options->cookieSecure);
+        self::assertTrue($options->cookieHttpOnly);
+    }
+
+    #[Test]
     public function unknown_samesite_string_throws(): void
     {
         $this->expectException(InvalidSessionOptionException::class);
@@ -100,7 +111,7 @@ final class SessionOptionsTest extends TestCase
         $this->expectException(InvalidSessionOptionException::class);
 
         SessionOptions::fromConfig(new Config([
-            'session' => ['cookie' => ['secure' => 'yes']],
+            'session' => ['cookie' => ['secure' => 'maybe']],
         ]));
     }
 

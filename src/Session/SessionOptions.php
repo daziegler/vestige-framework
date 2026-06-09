@@ -60,11 +60,18 @@ final readonly class SessionOptions
     private static function boolOption(Config $config, string $key, bool $default): bool
     {
         $value = $config->getOr($key, $default);
-        if (is_bool($value) === false) {
-            throw InvalidSessionOptionException::forKey($key, 'bool', $value);
+        if (is_bool($value)) {
+            return $value;
         }
 
-        return $value;
+        if (is_string($value)) {
+            $coerced = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+            if ($coerced !== null) {
+                return $coerced;
+            }
+        }
+
+        throw InvalidSessionOptionException::forKey($key, 'bool', $value);
     }
 
     private static function intOption(Config $config, string $key, int $default): int
