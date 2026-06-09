@@ -111,6 +111,7 @@ final readonly class FileSessionStorage implements SessionStorageInterface
             return null;
         }
 
+        /** @var array<string, mixed> $data */
         return ['ttl' => $ttl, 'data' => $data];
     }
 
