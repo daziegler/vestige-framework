@@ -11,6 +11,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final readonly class CallbackHandler implements RequestHandlerInterface
 {
+    /** @param Closure(ServerRequestInterface): ResponseInterface $callback */
     public function __construct(private Closure $callback) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface

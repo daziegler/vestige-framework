@@ -60,9 +60,13 @@ final class SessionMiddlewareTest extends TestCase
     {
         return new CallbackHandler(function (ServerRequestInterface $request) use ($callback): ResponseInterface {
             $session = $request->getAttribute(SessionMiddleware::SESSION_ATTRIBUTE);
-            \assert($session instanceof Session);
+            if ($session instanceof Session === false) {
+                self::fail('Request is missing the session attribute.');
+            }
 
-            return $callback($session) ?? $this->psr17->createResponse(200);
+            $result = $callback($session);
+
+            return $result instanceof ResponseInterface ? $result : $this->psr17->createResponse(200);
         });
     }
 
@@ -242,7 +246,7 @@ final class SessionMiddlewareTest extends TestCase
         $this->storage->write(self::ID, ['stale' => true], 100);
         $this->clock->advance(101);
 
-        $middleware->process($this->request(), $this->handler(fn (): null => null));
+        $middleware->process($this->request(), $this->handler(fn(): null => null));
 
         self::assertNull($this->storage->read(self::ID));
     }
