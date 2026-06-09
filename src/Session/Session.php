@@ -66,7 +66,7 @@ final class Session implements SessionInterface
     public function regenerate(): void
     {
         $this->regeneratedFrom ??= $this->id;
-        $this->id = bin2hex(random_bytes(16));
+        $this->id = (string) SessionId::generate();
     }
 
     public function destroy(): void
