@@ -19,4 +19,41 @@ final class EnvironmentTest extends TestCase
         self::assertSame('production', Environment::Production->value);
         self::assertSame('testing', Environment::Testing->value);
     }
+
+    #[Test]
+    public function from_globals_reads_app_env(): void
+    {
+        $_ENV['APP_ENV'] = 'development';
+
+        self::assertSame(Environment::Development, Environment::fromGlobals());
+    }
+
+    #[Test]
+    public function from_globals_defaults_to_production_when_unset(): void
+    {
+        unset($_ENV['APP_ENV']);
+
+        self::assertSame(Environment::Production, Environment::fromGlobals());
+    }
+
+    #[Test]
+    public function from_globals_defaults_to_production_for_unknown_values(): void
+    {
+        $_ENV['APP_ENV'] = 'staging';
+
+        self::assertSame(Environment::Production, Environment::fromGlobals());
+    }
+
+    #[Test]
+    public function from_globals_defaults_to_production_for_non_string_values(): void
+    {
+        $_ENV['APP_ENV'] = ['not', 'a', 'string'];
+
+        self::assertSame(Environment::Production, Environment::fromGlobals());
+    }
+
+    protected function tearDown(): void
+    {
+        unset($_ENV['APP_ENV']);
+    }
 }

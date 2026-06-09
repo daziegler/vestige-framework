@@ -8,6 +8,7 @@ use FilesystemIterator;
 use Psr\Clock\ClockInterface;
 use SplFileInfo;
 use Vestige\Session\Exceptions\SessionStorageException;
+use Vestige\Session\SessionId;
 
 final readonly class FileSessionStorage implements SessionStorageInterface
 {
@@ -34,7 +35,7 @@ final readonly class FileSessionStorage implements SessionStorageInterface
         }
 
         if ($this->expired($path, $payload['ttl'])) {
-            @unlink($path);
+            $this->removeIfExists($path);
 
             return null;
         }
@@ -44,16 +45,25 @@ final readonly class FileSessionStorage implements SessionStorageInterface
 
     public function write(string $id, array $data, int $ttl): void
     {
+        $path = $this->path($id);
         $this->ensureDir();
 
-        $path = $this->path($id);
         $json = json_encode(['ttl' => $ttl, 'data' => $data]);
-        if ($json === false || file_put_contents($path, $json) === false) {
+        if ($json === false) {
             throw SessionStorageException::writeFailed($path);
         }
 
-        chmod($path, 0600);
-        touch($path, $this->clock->now()->getTimestamp());
+        $tmp = tempnam($this->dir, 'tmp');
+        if ($tmp === false || file_put_contents($tmp, $json) === false) {
+            throw SessionStorageException::writeFailed($path);
+        }
+
+        touch($tmp, $this->clock->now()->getTimestamp());
+        if (rename($tmp, $path) === false) {
+            $this->removeIfExists($tmp);
+
+            throw SessionStorageException::writeFailed($path);
+        }
     }
 
     public function touch(string $id): void
@@ -68,7 +78,7 @@ final readonly class FileSessionStorage implements SessionStorageInterface
 
     public function destroy(string $id): void
     {
-        @unlink($this->path($id));
+        $this->removeIfExists($this->path($id));
     }
 
     public function gc(): void
@@ -84,7 +94,7 @@ final readonly class FileSessionStorage implements SessionStorageInterface
             $payload = $raw === false ? null : $this->decode($raw);
 
             if ($payload === null || $this->expired($path, $payload['ttl'])) {
-                @unlink($path);
+                $this->removeIfExists($path);
             }
         }
     }
@@ -117,7 +127,16 @@ final readonly class FileSessionStorage implements SessionStorageInterface
 
     private function path(string $id): string
     {
+        if (SessionId::tryFrom($id) === null) {
+            throw SessionStorageException::invalidId($id);
+        }
+
         return $this->dir . '/' . $id;
+    }
+
+    private function removeIfExists(string $path): void
+    {
+        @unlink($path);
     }
 
     private function ensureDir(): void

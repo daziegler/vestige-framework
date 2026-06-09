@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Vestige\Tests\Session\Storage;
 
+use Closure;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Vestige\Session\Exceptions\SessionStorageException;
 use Vestige\Session\Storage\FileSessionStorage;
@@ -95,6 +97,24 @@ final class FileSessionStorageTest extends SessionStorageContractTestCase
     {
         $this->expectException(SessionStorageException::class);
         $this->storage->write(self::ID, ['bad' => "\xB1\x31"], 100);
+    }
+
+    #[Test]
+    #[DataProvider('malformedIdCalls')]
+    public function malformed_ids_are_rejected_by_every_method(Closure $call): void
+    {
+        $this->expectException(SessionStorageException::class);
+
+        $call($this->storage);
+    }
+
+    /** @return iterable<string, array{Closure(SessionStorageInterface): mixed}> */
+    public static function malformedIdCalls(): iterable
+    {
+        yield 'read' => [static fn(SessionStorageInterface $storage): ?array => $storage->read('../escape')];
+        yield 'write' => [static fn(SessionStorageInterface $storage) => $storage->write('../escape', [], 100)];
+        yield 'touch' => [static fn(SessionStorageInterface $storage) => $storage->touch('../escape')];
+        yield 'destroy' => [static fn(SessionStorageInterface $storage) => $storage->destroy('../escape')];
     }
 
     #[Test]

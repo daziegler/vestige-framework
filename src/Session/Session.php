@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vestige\Session;
 
+use Vestige\Session\Exceptions\SessionDestroyedException;
+
 final class Session implements SessionInterface
 {
     private bool $dirty = false;
@@ -24,6 +26,8 @@ final class Session implements SessionInterface
 
     public function set(string $key, mixed $value): void
     {
+        $this->assertNotDestroyed();
+
         $this->data[$key] = $value;
         $this->dirty = true;
     }
@@ -35,6 +39,8 @@ final class Session implements SessionInterface
 
     public function remove(string $key): void
     {
+        $this->assertNotDestroyed();
+
         if (array_key_exists($key, $this->data) === false) {
             return;
         }
@@ -45,6 +51,8 @@ final class Session implements SessionInterface
 
     public function clear(): void
     {
+        $this->assertNotDestroyed();
+
         if ($this->data === []) {
             return;
         }
@@ -65,6 +73,8 @@ final class Session implements SessionInterface
 
     public function regenerate(): void
     {
+        $this->assertNotDestroyed();
+
         $this->regeneratedFrom ??= $this->id;
         $this->id = (string) SessionId::generate();
     }
@@ -93,5 +103,12 @@ final class Session implements SessionInterface
     public function regeneratedFrom(): ?string
     {
         return $this->regeneratedFrom;
+    }
+
+    private function assertNotDestroyed(): void
+    {
+        if ($this->destroyed) {
+            throw SessionDestroyedException::create();
+        }
     }
 }

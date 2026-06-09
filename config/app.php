@@ -11,13 +11,11 @@ use Vestige\Log\LoggingProvider;
 use Vestige\Session\SessionMiddleware;
 use Vestige\Session\SessionProvider;
 
-$env = Environment::tryFrom($_ENV['APP_ENV'] ?? '') ?? Environment::Production;
-
 return [
     'providers' => [
         LoggingProvider::class,
         SessionProvider::class,
-        match ($env) {
+        match (Environment::fromGlobals()) {
             Environment::Development => DevErrorProvider::class,
             default => ProdErrorProvider::class,
         },
@@ -26,7 +24,7 @@ return [
         LoggerInterface::class,
     ],
     'middleware' => [
-        ErrorHandlerMiddleware::class,
         SessionMiddleware::class,
+        ErrorHandlerMiddleware::class,
     ],
 ];

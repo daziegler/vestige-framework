@@ -19,6 +19,13 @@ final readonly class Cookie implements Stringable
         public bool $httpOnly,
         public SameSite $sameSite,
     ) {
+        $this->assertHeaderSafe('name', $this->name);
+        $this->assertHeaderSafe('value', $this->value);
+        $this->assertHeaderSafe('path', $this->path);
+        if ($this->domain !== null) {
+            $this->assertHeaderSafe('domain', $this->domain);
+        }
+
         if ($this->sameSite === SameSite::None && $this->secure === false) {
             throw new InvalidArgumentException('SameSite=None requires the Secure attribute.');
         }
@@ -58,5 +65,12 @@ final readonly class Cookie implements Stringable
         $parts[] = sprintf('SameSite=%s', $this->sameSite->value);
 
         return implode('; ', $parts);
+    }
+
+    private function assertHeaderSafe(string $attribute, string $value): void
+    {
+        if (preg_match('/[\x00-\x1F\x7F;]/', $value) === 1) {
+            throw new InvalidArgumentException(sprintf('Cookie %s must not contain ";" or control characters.', $attribute));
+        }
     }
 }

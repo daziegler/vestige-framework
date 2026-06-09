@@ -17,4 +17,9 @@ final class SessionStorageException extends RuntimeException implements SessionE
     {
         return new self(sprintf('Failed to write session file "%s".', $path));
     }
+
+    public static function invalidId(string $id): self
+    {
+        return new self(sprintf('Session id "%s" is malformed.', $id));
+    }
 }

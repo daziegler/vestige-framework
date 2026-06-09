@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Vestige\Config\Config;
 use Vestige\Http\SameSite;
+use Vestige\Session\Exceptions\InvalidSessionOptionException;
 use Vestige\Session\SessionOptions;
 
 #[CoversClass(SessionOptions::class)]
@@ -60,5 +61,86 @@ final class SessionOptionsTest extends TestCase
         self::assertSame(60, $options->lifetime);
         self::assertSame('/tmp/custom', $options->storageDir);
         self::assertSame(0, $options->gcDivisor);
+    }
+
+    #[Test]
+    public function samesite_accepts_case_insensitive_strings(): void
+    {
+        $options = SessionOptions::fromConfig(new Config([
+            'session' => ['cookie' => ['samesite' => 'strict']],
+        ]));
+
+        self::assertSame(SameSite::Strict, $options->cookieSameSite);
+    }
+
+    #[Test]
+    public function integer_options_accept_numeric_strings(): void
+    {
+        $options = SessionOptions::fromConfig(new Config([
+            'session' => ['lifetime' => '3600', 'gc' => ['divisor' => '50']],
+        ]));
+
+        self::assertSame(3600, $options->lifetime);
+        self::assertSame(50, $options->gcDivisor);
+    }
+
+    #[Test]
+    public function unknown_samesite_string_throws(): void
+    {
+        $this->expectException(InvalidSessionOptionException::class);
+
+        SessionOptions::fromConfig(new Config([
+            'session' => ['cookie' => ['samesite' => 'sideways']],
+        ]));
+    }
+
+    #[Test]
+    public function non_boolean_secure_throws(): void
+    {
+        $this->expectException(InvalidSessionOptionException::class);
+
+        SessionOptions::fromConfig(new Config([
+            'session' => ['cookie' => ['secure' => 'yes']],
+        ]));
+    }
+
+    #[Test]
+    public function non_integer_lifetime_throws(): void
+    {
+        $this->expectException(InvalidSessionOptionException::class);
+
+        SessionOptions::fromConfig(new Config([
+            'session' => ['lifetime' => 'soon'],
+        ]));
+    }
+
+    #[Test]
+    public function non_string_cookie_name_throws(): void
+    {
+        $this->expectException(InvalidSessionOptionException::class);
+
+        SessionOptions::fromConfig(new Config([
+            'session' => ['cookie' => ['name' => 123]],
+        ]));
+    }
+
+    #[Test]
+    public function non_string_cookie_domain_throws(): void
+    {
+        $this->expectException(InvalidSessionOptionException::class);
+
+        SessionOptions::fromConfig(new Config([
+            'session' => ['cookie' => ['domain' => 123]],
+        ]));
+    }
+
+    #[Test]
+    public function non_string_samesite_throws(): void
+    {
+        $this->expectException(InvalidSessionOptionException::class);
+
+        SessionOptions::fromConfig(new Config([
+            'session' => ['cookie' => ['samesite' => 5]],
+        ]));
     }
 }

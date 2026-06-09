@@ -4,4 +4,6 @@ declare(strict_types=1);
 
 namespace Vestige\Session\Exceptions;
 
-interface SessionExceptionInterface {}
+use Throwable;
+
+interface SessionExceptionInterface extends Throwable {}

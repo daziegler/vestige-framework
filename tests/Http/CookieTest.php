@@ -6,6 +6,7 @@ namespace Vestige\Tests\Http;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Vestige\Http\Cookie;
@@ -68,6 +69,26 @@ final class CookieTest extends TestCase
         );
     }
 
+    /** @param array<string, string> $arguments */
+    #[Test]
+    #[DataProvider('injectionAttempts')]
+    public function attribute_injection_is_rejected(array $arguments): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->cookie(...$arguments);
+    }
+
+    /** @return iterable<string, array{array<string, string>}> */
+    public static function injectionAttempts(): iterable
+    {
+        yield 'name' => [['name' => 'sid;evil']];
+        yield 'value' => [['value' => 'v; Domain=evil.example']];
+        yield 'path' => [['path' => '/; Domain=evil.example']];
+        yield 'domain' => [['domain' => 'evil.example; Secure']];
+        yield 'control characters' => [['value' => "v\x00"]];
+    }
+
     #[Test]
     public function expired_carries_name_path_and_domain(): void
     {
@@ -83,6 +104,20 @@ final class CookieTest extends TestCase
         self::assertSame(
             'vestige_session=; Max-Age=0; Path=/app; Domain=example.com; Secure; HttpOnly; SameSite=Lax',
             (string) $cookie,
+        );
+    }
+
+    private function cookie(string $name = 's', string $value = 'v', string $path = '/', ?string $domain = null): Cookie
+    {
+        return new Cookie(
+            name: $name,
+            value: $value,
+            maxAge: 60,
+            path: $path,
+            domain: $domain,
+            secure: false,
+            httpOnly: false,
+            sameSite: SameSite::Lax,
         );
     }
 }

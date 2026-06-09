@@ -6,6 +6,7 @@ namespace Vestige\Session;
 
 use Vestige\Config\Config;
 use Vestige\Http\SameSite;
+use Vestige\Session\Exceptions\InvalidSessionOptionException;
 
 final readonly class SessionOptions
 {
@@ -23,35 +24,79 @@ final readonly class SessionOptions
 
     public static function fromConfig(Config $config): self
     {
-        /** @var string $cookieName */
-        $cookieName = $config->getOr('session.cookie.name', 'vestige_session');
-        /** @var string $cookiePath */
-        $cookiePath = $config->getOr('session.cookie.path', '/');
-        /** @var string|null $cookieDomain */
-        $cookieDomain = $config->getOr('session.cookie.domain', null);
-        /** @var bool $cookieSecure */
-        $cookieSecure = $config->getOr('session.cookie.secure', true);
-        /** @var bool $cookieHttpOnly */
-        $cookieHttpOnly = $config->getOr('session.cookie.httponly', true);
-        /** @var SameSite $cookieSameSite */
-        $cookieSameSite = $config->getOr('session.cookie.samesite', SameSite::Lax);
-        /** @var int $lifetime */
-        $lifetime = $config->getOr('session.lifetime', 7200);
-        /** @var string|null $storageDir */
-        $storageDir = $config->getOr('session.storage.dir', null);
-        /** @var int $gcDivisor */
-        $gcDivisor = $config->getOr('session.gc.divisor', 100);
-
         return new self(
-            cookieName: $cookieName,
-            cookiePath: $cookiePath,
-            cookieDomain: $cookieDomain,
-            cookieSecure: $cookieSecure,
-            cookieHttpOnly: $cookieHttpOnly,
-            cookieSameSite: $cookieSameSite,
-            lifetime: $lifetime,
-            storageDir: $storageDir ?? sys_get_temp_dir() . '/vestige_sessions',
-            gcDivisor: $gcDivisor,
+            cookieName: self::stringOption($config, 'session.cookie.name', 'vestige_session'),
+            cookiePath: self::stringOption($config, 'session.cookie.path', '/'),
+            cookieDomain: self::nullableStringOption($config, 'session.cookie.domain'),
+            cookieSecure: self::boolOption($config, 'session.cookie.secure', true),
+            cookieHttpOnly: self::boolOption($config, 'session.cookie.httponly', true),
+            cookieSameSite: self::sameSiteOption($config, 'session.cookie.samesite'),
+            lifetime: self::intOption($config, 'session.lifetime', 7200),
+            storageDir: self::nullableStringOption($config, 'session.storage.dir') ?? sys_get_temp_dir() . '/vestige_sessions',
+            gcDivisor: self::intOption($config, 'session.gc.divisor', 100),
         );
+    }
+
+    private static function stringOption(Config $config, string $key, string $default): string
+    {
+        $value = $config->getOr($key, $default);
+        if (is_string($value) === false) {
+            throw InvalidSessionOptionException::forKey($key, 'string', $value);
+        }
+
+        return $value;
+    }
+
+    private static function nullableStringOption(Config $config, string $key): ?string
+    {
+        $value = $config->getOr($key, null);
+        if ($value !== null && is_string($value) === false) {
+            throw InvalidSessionOptionException::forKey($key, 'string|null', $value);
+        }
+
+        return $value;
+    }
+
+    private static function boolOption(Config $config, string $key, bool $default): bool
+    {
+        $value = $config->getOr($key, $default);
+        if (is_bool($value) === false) {
+            throw InvalidSessionOptionException::forKey($key, 'bool', $value);
+        }
+
+        return $value;
+    }
+
+    private static function intOption(Config $config, string $key, int $default): int
+    {
+        $value = $config->getOr($key, $default);
+        if (is_string($value) && ctype_digit($value)) {
+            return (int) $value;
+        }
+
+        if (is_int($value) === false) {
+            throw InvalidSessionOptionException::forKey($key, 'int', $value);
+        }
+
+        return $value;
+    }
+
+    private static function sameSiteOption(Config $config, string $key): SameSite
+    {
+        $value = $config->getOr($key, SameSite::Lax);
+        if ($value instanceof SameSite) {
+            return $value;
+        }
+
+        if (is_string($value) === false) {
+            throw InvalidSessionOptionException::forKey($key, 'SameSite|string', $value);
+        }
+
+        $parsed = SameSite::tryFrom(ucfirst(strtolower($value)));
+        if ($parsed === null) {
+            throw InvalidSessionOptionException::forKey($key, 'SameSite|string', $value);
+        }
+
+        return $parsed;
     }
 }

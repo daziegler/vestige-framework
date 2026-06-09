@@ -8,6 +8,7 @@ interface SessionInterface
 {
     public function get(string $key, mixed $default = null): mixed;
 
+    /** Values must survive a JSON round-trip: scalars and arrays only, objects come back as arrays. */
     public function set(string $key, mixed $value): void;
 
     public function has(string $key): bool;

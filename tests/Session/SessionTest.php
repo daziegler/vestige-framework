@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Vestige\Tests\Session;
 
+use Closure;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Vestige\Session\Exceptions\SessionDestroyedException;
 use Vestige\Session\Session;
 
 #[CoversClass(Session::class)]
@@ -123,5 +126,49 @@ final class SessionTest extends TestCase
 
         self::assertTrue($session->isDestroyed());
         self::assertSame([], $session->all());
+    }
+
+    #[Test]
+    #[DataProvider('mutations')]
+    public function mutation_after_destroy_throws(Closure $mutation): void
+    {
+        $session = new Session(self::ID, [], preExisting: true);
+        $session->destroy();
+
+        $this->expectException(SessionDestroyedException::class);
+
+        $mutation($session);
+    }
+
+    /** @return iterable<string, array{Closure(Session): void}> */
+    public static function mutations(): iterable
+    {
+        yield 'set' => [static fn(Session $session) => $session->set('user', 1)];
+        yield 'remove' => [static fn(Session $session) => $session->remove('user')];
+        yield 'clear' => [static fn(Session $session) => $session->clear()];
+        yield 'regenerate' => [static fn(Session $session) => $session->regenerate()];
+    }
+
+    #[Test]
+    public function reads_after_destroy_are_allowed(): void
+    {
+        $session = new Session(self::ID, ['user' => 42], preExisting: true);
+        $session->destroy();
+
+        self::assertNull($session->get('user'));
+        self::assertFalse($session->has('user'));
+        self::assertSame([], $session->all());
+        self::assertSame(self::ID, $session->id());
+    }
+
+    #[Test]
+    public function destroy_is_idempotent(): void
+    {
+        $session = new Session(self::ID, [], preExisting: true);
+
+        $session->destroy();
+        $session->destroy();
+
+        self::assertTrue($session->isDestroyed());
     }
 }
