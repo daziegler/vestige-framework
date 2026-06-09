@@ -26,6 +26,7 @@ final class SessionProxyTest extends TestCase
         self::assertSame(42, $proxy->get('user'));
         self::assertTrue($proxy->has('user'));
         self::assertSame('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', $proxy->id());
+        self::assertSame(['user' => 42], $proxy->all());
 
         $proxy->set('role', 'admin');
         self::assertSame('admin', $session->get('role'));

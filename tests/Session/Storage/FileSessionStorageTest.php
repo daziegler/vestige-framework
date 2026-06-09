@@ -89,4 +89,21 @@ final class FileSessionStorageTest extends SessionStorageContractTestCase
         $this->expectException(SessionStorageException::class);
         $storage->write(self::ID, [], 100);
     }
+
+    #[Test]
+    public function unencodable_data_throws(): void
+    {
+        $this->expectException(SessionStorageException::class);
+        $this->storage->write(self::ID, ['bad' => "\xB1\x31"], 100);
+    }
+
+    #[Test]
+    public function gc_on_missing_directory_is_a_noop(): void
+    {
+        $storage = new FileSessionStorage($this->dir . '/missing', $this->clock);
+
+        $storage->gc();
+
+        self::assertDirectoryDoesNotExist($this->dir . '/missing');
+    }
 }

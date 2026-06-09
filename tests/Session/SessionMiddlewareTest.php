@@ -19,6 +19,7 @@ use Vestige\Session\SessionContext;
 use Vestige\Session\SessionMiddleware;
 use Vestige\Session\SessionOptions;
 use Vestige\Session\Storage\InMemorySessionStorage;
+use Vestige\Session\Storage\SessionStorageInterface;
 use Vestige\Tests\Clock\Fixtures\FrozenClock;
 use Vestige\Tests\Session\Fixtures\CallbackHandler;
 
@@ -146,6 +147,23 @@ final class SessionMiddlewareTest extends TestCase
     }
 
     #[Test]
+    public function well_formed_unknown_id_produces_a_fresh_session(): void
+    {
+        $observedPreExisting = null;
+        $observedId = null;
+        $this->middleware->process(
+            $this->request(self::ID),
+            $this->handler(function (Session $session) use (&$observedPreExisting, &$observedId): void {
+                $observedPreExisting = $session->isPreExisting();
+                $observedId = $session->id();
+            }),
+        );
+
+        self::assertFalse($observedPreExisting);
+        self::assertNotSame(self::ID, $observedId);
+    }
+
+    #[Test]
     public function destroy_removes_record_and_expires_cookie(): void
     {
         $this->storage->write(self::ID, ['user' => 42], 7200);
@@ -193,6 +211,26 @@ final class SessionMiddlewareTest extends TestCase
         self::assertNull($this->storage->read(self::ID));
         self::assertSame(['user' => 42], $this->storage->read((string) $newId));
         self::assertStringContainsString('vestige_session=' . $newId, $response->getHeaderLine('Set-Cookie'));
+    }
+
+    #[Test]
+    public function destroy_after_regenerate_removes_both_records(): void
+    {
+        $this->storage->write(self::ID, ['user' => 42], 7200);
+        $newId = null;
+
+        $response = $this->middleware->process(
+            $this->request(self::ID),
+            $this->handler(function (Session $session) use (&$newId): void {
+                $session->regenerate();
+                $newId = $session->id();
+                $session->destroy();
+            }),
+        );
+
+        self::assertNull($this->storage->read(self::ID));
+        self::assertNull($this->storage->read((string) $newId));
+        self::assertStringContainsString('Max-Age=0', $response->getHeaderLine('Set-Cookie'));
     }
 
     #[Test]
@@ -249,5 +287,38 @@ final class SessionMiddlewareTest extends TestCase
         $middleware->process($this->request(), $this->handler(fn(): null => null));
 
         self::assertNull($this->storage->read(self::ID));
+    }
+
+    #[Test]
+    public function gc_is_disabled_when_divisor_is_below_one(): void
+    {
+        $storage = new class implements SessionStorageInterface {
+            public int $gcCalls = 0;
+
+            public function read(string $id): ?array
+            {
+                return null;
+            }
+
+            public function write(string $id, array $data, int $ttl): void {}
+
+            public function touch(string $id): void {}
+
+            public function destroy(string $id): void {}
+
+            public function gc(): void
+            {
+                ++$this->gcCalls;
+            }
+        };
+        $middleware = new SessionMiddleware(
+            $storage,
+            $this->context,
+            SessionOptions::fromConfig(new Config(['session' => ['gc' => ['divisor' => 0]]])),
+        );
+
+        $middleware->process($this->request(), $this->handler(fn(): null => null));
+
+        self::assertSame(0, $storage->gcCalls);
     }
 }
