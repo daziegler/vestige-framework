@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Vestige\Exceptions\KernelNotBootedException;
 use Vestige\Exceptions\RoutesFileException;
 use Vestige\Kernel;
+use Vestige\Tests\Kernel\Fixtures\EagerProbe;
 
 #[CoversClass(Kernel::class)]
 #[CoversClass(KernelNotBootedException::class)]
@@ -62,5 +63,28 @@ final class KernelTest extends TestCase
 
         $this->expectException(RoutesFileException::class);
         $kernel->boot();
+    }
+
+    #[Test]
+    public function boot_registers_configured_service_providers(): void
+    {
+        $kernel = new Kernel(__DIR__ . '/apps/provider-app');
+        $kernel->boot();
+
+        $request = new Psr17Factory()->createServerRequest('GET', '/');
+        $response = $kernel->handle($request);
+
+        self::assertSame('Hello from provider', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function boot_eagerly_loads_configured_services(): void
+    {
+        EagerProbe::$constructed = false;
+        $kernel = new Kernel(__DIR__ . '/apps/provider-app');
+
+        $kernel->boot();
+
+        self::assertTrue(EagerProbe::$constructed);
     }
 }

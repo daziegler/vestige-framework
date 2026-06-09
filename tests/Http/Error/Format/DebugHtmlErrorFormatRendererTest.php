@@ -91,4 +91,17 @@ final class DebugHtmlErrorFormatRendererTest extends TestCase
         self::assertStringContainsString('traceId', $body);
         self::assertStringContainsString('abc-123', $body);
     }
+
+    #[Test]
+    public function json_encodes_non_string_extension_values(): void
+    {
+        $problem = Problem::forStatus(HttpStatus::UnprocessableEntity)
+            ->withExtension('errors', ['name' => 'required']);
+
+        $response = $this->renderer()->render($problem, new RuntimeException('cause'));
+
+        $body = (string) $response->getBody();
+        self::assertStringContainsString('errors', $body);
+        self::assertStringContainsString('{&quot;name&quot;:&quot;required&quot;}', $body);
+    }
 }
