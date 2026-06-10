@@ -25,6 +25,10 @@ composer *args:
 test *args:
     {{ exec }} vendor/bin/phpunit {{ args }}
 
+# Run PHPUnit with coverage and enforce the gate
+coverage:
+    {{ compose }} run --rm -e XDEBUG_MODE=coverage php sh -c "vendor/bin/phpunit --coverage-clover dev/clover.xml && php bin/check-coverage.php dev/clover.xml"
+
 # Run PHPStan
 stan *args:
     {{ exec }} vendor/bin/phpstan analyse {{ args }}

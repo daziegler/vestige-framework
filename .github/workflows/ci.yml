@@ -16,7 +16,7 @@ jobs:
           coverage: pcov
       - run: composer install --no-interaction --no-progress
       - run: vendor/bin/phpunit --coverage-clover=clover.xml
-      - run: php bin/check-coverage.php clover.xml 99
+      - run: php bin/check-coverage.php clover.xml
 
   phpstan:
     runs-on: ubuntu-latest
