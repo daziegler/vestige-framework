@@ -8,13 +8,14 @@ use Vestige\Http\Error\DevErrorProvider;
 use Vestige\Http\Error\ErrorHandlerMiddleware;
 use Vestige\Http\Error\ProdErrorProvider;
 use Vestige\Log\LoggingProvider;
-
-$env = Environment::tryFrom($_ENV['APP_ENV'] ?? '') ?? Environment::Production;
+use Vestige\Session\SessionMiddleware;
+use Vestige\Session\SessionProvider;
 
 return [
     'providers' => [
         LoggingProvider::class,
-        match ($env) {
+        SessionProvider::class,
+        match (Environment::fromGlobals()) {
             Environment::Development => DevErrorProvider::class,
             default => ProdErrorProvider::class,
         },
@@ -23,6 +24,7 @@ return [
         LoggerInterface::class,
     ],
     'middleware' => [
+        SessionMiddleware::class,
         ErrorHandlerMiddleware::class,
     ],
 ];
